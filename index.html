@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vardiya Çizelgesi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 0;
+            border: 2px solid #333;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .header {
+            background: linear-gradient(to bottom, #2c3e50, #34495e);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 2px solid #333;
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            margin: 0;
+            line-height: 1.3;
+        }
+        
+        .date-range {
+            background: #e9ecef;
+            padding: 15px 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .form-group {
+            display: inline-block;
+            margin-right: 15px;
+            margin-bottom: 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 150px;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .table-container {
+            padding: 0;
+        }
+        
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+            font-size: 12px;
+        }
+        
+        .schedule-table th,
+        .schedule-table td {
+            border: 1px solid #333;
+            padding: 8px 6px;
+            text-align: center;
+            vertical-align: middle;
+            font-weight: 500;
+        }
+        
+        .schedule-table th {
+            background: #2c3e50;
+            color: white;
+            font-weight: bold;
+            padding: 10px 6px;
+            font-size: 11px;
+        }
+        
+        .schedule-table .date-cell {
+            background: #f8f9fa;
+            font-weight: bold;
+            min-width: 80px;
+        }
+        
+        .schedule-table .day-cell {
+            background: #f8f9fa;
+            font-weight: bold;
+            min-width: 80px;
+        }
+        
+        .schedule-table .official-holiday {
+            background: #f8d7da !important;
+            color: #721c24 !important;
+        }
+
+        .print-header {
+            display: none;
+        }
+        
+        .notes {
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .notes h5 {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .notes ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .notes li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .action-buttons {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 12mm;
+            }
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                border: none;
+                max-width: 100%;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .header,
+            .controls,
+            .action-buttons,
+            .leave-management,
+            .date-range {
+                display: none !important;
+            }
+            
+            .print-header {
+                display: block;
+                width: 100%;
+                text-align: center;
+                margin: 0 auto 12px;
+                font-family: Arial, sans-serif;
+            }
+            
+            .print-header .title {
+                font-size: 13px;
+                font-weight: bold;
+                line-height: 1.2;
+            }
+            
+            .print-header .subtitle {
+                font-size: 12px;
+                font-weight: bold;
+                margin-top: 4px;
+            }
+            
+            .print-header .date-range-print {
+                font-size: 11px;
+                margin-top: 8px;
+            }
+            
+            .schedule-table {
+                font-size: 9px;
+                margin: 0 auto;
+                width: 100%;
+                max-width: 100%;
+                text-align: center;
+                border-collapse: collapse;
+                table-layout: fixed;
+            }
+            
+            .schedule-table th,
+            .schedule-table td {
+                padding: 4px 5px;
+                border: 1px solid #000;
+                height: auto;
+                word-wrap: break-word;
+                vertical-align: middle;
+            }
+            
+            .schedule-table th {
+                background: #ededed;
+                font-weight: bold;
+            }
+            
+            .schedule-table .date-cell,
+            .schedule-table .day-cell {
+                background: #f8f8f8;
+                font-weight: bold;
+            }
+            
+            .notes {
+                display: block !important;
+                margin: 10px 0 0;
+                padding: 0 20px;
+            }
+            
+            .notes h5 {
+                display: none;
+            }
+            
+            .notes ul {
+                padding-left: 18px;
+                margin: 0;
+            }
+            
+            .notes li {
+                font-size: 9px;
+                margin-bottom: 4px;
+            }
+            
+            .signature {
+                display: block;
+                width: 100%;
+                margin-top: 20px;
+                padding-right: 30px;
+                text-align: right;
+                font-size: 10px;
+            }
+            
+            .signature p {
+                margin: 2px 0;
+                line-height: 1.2;
+            }
+            
+            .schedule-table tbody tr {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="mb-0">BURDUR GENÇLÍK VE SPOR ÍL MÜDÜRLÜGÜ<br>SALDA KAYAK MERKEZÍ GÜVENLÍK VARDÍYASI</h1>
+        </div>
+        
+        <!-- Tarih Aralığı -->
+        <div class="date-range" id="dateRange" style="display: none;">
+            <h3 id="dateRangeText"></h3>
+        </div>
+        
+        <!-- Kontroller -->
+        <div class="controls">
+            <div class="form-group">
+                <label for="monthSelect">Ay Seçimi</label>
+                <select id="monthSelect" class="form-control">
+                    <option value="">Ay seçin...</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="yearSelect">Yıl Seçimi</label>
+                <select id="yearSelect" class="form-control">
+                </select>
+            </div>
+            
+            <button class="btn btn-primary" onclick="generateSchedule()">
+                <i class="fas fa-magic"></i> Vardiya Oluştur
+            </button>
+        </div>
+        
+        <!-- Personel İzin Yönetimi -->
+        <div class="leave-management" style="padding: 20px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 style="font-weight: bold; margin: 0; color: #2c3e50;">
+                    <i class="fas fa-calendar-times"></i> Personel İzin Yönetimi
+                </h5>
+                <button class="btn btn-sm btn-outline-danger" onclick="tumIzinleriTemizle()">
+                    <i class="fas fa-trash-alt"></i> Tümünü Temizle
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="personelSelect">Personel</label>
+                    <select id="personelSelect" class="form-control">
+                        <option value="">Personel seçin...</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="izinBaslangic">İzin Başlangıç</label>
+                    <input type="date" id="izinBaslangic" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label for="izinBitis">İzin Bitiş</label>
+                    <input type="date" id="izinBitis" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label>&nbsp;</label><br>
+                    <button class="btn btn-warning" onclick="izinEkle()">
+                        <i class="fas fa-plus"></i> İzin Ekle
+                    </button>
+                </div>
+            </div>
+            <div id="izinListesi" style="margin-top: 15px;">
+                <p class="text-muted">Henüz izin eklenmemiş.</p>
+            </div>
+        </div>
+        
+        <!-- Tablo -->
+        <div class="table-container">
+            <div id="scheduleOutput"></div>
+        </div>
+        
+        <!-- Notlar -->
+        <div class="notes" id="notesSection" style="display: none;">
+            <h5>NOTLAR</h5>
+            <ul>
+                <li>Görevi ile ilgili emir ve talimatları eksiksiz yerine getirecektir.</li>
+                <li>Çalışma yerinde verilen 1 saatlik yemek ve dinlenme süresi çalışma süresine dahil edilmiştir.</li>
+                <li>Nöbet vardiya sistemi 12 (on iki) saatlik vardiya sistemine göre yazılmıştır.</li>
+            </ul>
+        </div>
+        
+        <div class="signature" id="signatureSection" style="display: none;">
+            <p>Onaylayan</p>
+            <p>Ramazan KARA</p>
+            <p>İlçe Müdürü</p>
+        </div>
+        
+        <!-- Butonlar -->
+        <div class="action-buttons" id="actionButtons" style="display: none;">
+            <button class="btn btn-danger" onclick="generatePDF()">
+                <i class="fas fa-file-pdf"></i> PDF İndir
+            </button>
+            <button class="btn btn-success" onclick="generateExcel()">
+                <i class="fas fa-file-excel"></i> Ayı İndir
+            </button>
+            <button class="btn btn-primary" onclick="window.print()">
+                <i class="fas fa-print"></i> Yazdır
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // API URL helper - subpath dağıtımını destekleyecek şekilde güncellendi
+        function apiUrl(endpoint) {
+            return './api/' + String(endpoint).replace(/^\/+/, '');
+        }
+
+        // Personel listesi
+        const personnel = [
+            'OSMAN UYGURALP',
+            'SİNAN ACAR',
+            'MUSTAFA ÖZBİLEK',
+            'SELİM KUZU'
+        ];
+        
+        // İzin listesi
+        let izinler = [];
+        
+        // Aylar
+        const months = [
+            'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+            'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+        ];
+        
+        // Günler
+        const days = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+        
+        // Resmi Tatiller (Ay-Gün formatında)
+        const resmiTatiller = [
+            '1-1',   // Yılbaşı
+            '4-23',  // 23 Nisan Ulusal Egemenlik ve Çocuk Bayramı
+            '5-19',  // 19 Mayıs Atatürk'ü Anma, Gençlik ve Spor Bayramı
+            '7-15',  // 15 Temmuz Demokrasi ve Milli Birlik Günü
+            '8-30',  // 30 Ağustos Zafer Bayramı
+            '10-29', // 29 Ekim Cumhuriyet Bayramı
+            // Dini bayramlar (her yıl değişir, şu an sabit tarihler)
+            '4-10',  // Ramazan Bayramı (yaklaşık)
+            '4-11',  // Ramazan Bayramı 2. gün
+            '4-12',  // Ramazan Bayramı 3. gün
+            '6-17',  // Kurban Bayramı (yaklaşık)
+            '6-18',  // Kurban Bayramı 2. gün
+            '6-19',  // Kurban Bayramı 3. gün
+            '6-20',  // Kurban Bayramı 4. gün
+        ];
+        
+        function resmiTatilMi(tarih) {
+            const ay = tarih.getMonth() + 1;
+            const gun = tarih.getDate();
+            const tarihKey = `${ay}-${gun}`;
+            return resmiTatiller.includes(tarihKey);
+        }
+        
+        // Sayfa yüklendiğinde ay ve yıl seçeneklerini doldur
+        document.addEventListener('DOMContentLoaded', function() {
+            populateMonthYear();
+            populatePersonel();
+            izinleriSunucudanYukle();
+        });
+        
+        async function izinleriSunucudanYukle() {
+            try {
+                const response = await fetch(apiUrl('izinler'));
+                const izinlerData = await response.json();
+                izinler = izinlerData.map(izin => ({
+                    id: izin._id,
+                    personel: izin.personel,
+                    baslangic: izin.baslangic.split('T')[0],
+                    bitis: izin.bitis.split('T')[0]
+                }));
+                izinleriGoster();
+                refreshScheduleIfVisible();
+            } catch (error) {
+                console.log('İzinler yüklenemedi:', error);
+                izinleriGoster();
+            }
+        }
+        
+        async function izinleriKaydet() {
+            // Local storage yerine sunucu kullanıyoruz, bu fonksiyon gerekli değil
+        }
+
+        function refreshScheduleIfVisible() {
+            const scheduleOutput = document.getElementById('scheduleOutput');
+            const dateRange = document.getElementById('dateRange');
+            if (scheduleOutput && scheduleOutput.innerHTML.trim() !== '' && dateRange && dateRange.style.display !== 'none') {
+                generateSchedule();
+            }
+        }
+        
+        function populatePersonel() {
+            const personelSelect = document.getElementById('personelSelect');
+            personnel.forEach(personel => {
+                const option = document.createElement('option');
+                option.value = personel;
+                option.textContent = personel;
+                personelSelect.appendChild(option);
+            });
+        }
+        
+        async function izinEkle() {
+            const personel = document.getElementById('personelSelect').value;
+            const baslangic = document.getElementById('izinBaslangic').value;
+            const bitis = document.getElementById('izinBitis').value;
+            
+            if (!personel || !baslangic || !bitis) {
+                alert('Lütfen tüm alanları doldurunuz!');
+                return;
+            }
+            
+            if (new Date(baslangic) > new Date(bitis)) {
+                alert('İzin başlangıç tarihi bitiş tarihinden sonra olamaz!');
+                return;
+            }
+            
+            try {
+                const response = await fetch(apiUrl('izinler'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        personel,
+                        baslangic,
+                        bitis
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Formu temizle
+                    document.getElementById('personelSelect').value = '';
+                    document.getElementById('izinBaslangic').value = '';
+                    document.getElementById('izinBitis').value = '';
+                    
+                    // İzinleri yeniden yükle
+                    await izinleriSunucudanYukle();
+                } else {
+                    const errorData = await response.json();
+                    alert('İzin eklenirken hata oluştu! ' + errorData.message);
+                }
+            } catch (error) {
+                alert('İzin eklenirken hata oluştu!');
+            }
+        }
+        
+        function izinleriGoster() {
+            const izinListesi = document.getElementById('izinListesi');
+            if (izinler.length === 0) {
+                izinListesi.innerHTML = '<p class="text-muted">Henüz izin eklenmemiş.</p>';
+                return;
+            }
+            
+            let html = '<div class="card"><div class="card-body">';
+            html += '<h6 class="card-title">Eklenen İzinler:</h6>';
+            
+            izinler.forEach(izin => {
+                html += `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div>
+                            <strong>${izin.personel}</strong><br>
+                            <small>${formatDateStr(izin.baslangic)} - ${formatDateStr(izin.bitis)}</small>
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="izinSil(${izin.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+            izinListesi.innerHTML = html;
+        }
+        
+        async function izinSil(id) {
+            try {
+                const response = await fetch(apiUrl('izinler/' + id), {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    await izinleriSunucudanYukle();
+                } else {
+                    alert('İzin silinirken hata oluştu!');
+                }
+            } catch (error) {
+                console.error('İzin silme hatası:', error);
+                alert('İzin silinirken hata oluştu!');
+            }
+        }
+        
+        async function tumIzinleriTemizle() {
+            if (confirm('Tüm izinleri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+                try {
+                    const response = await fetch(apiUrl('izinler'), {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        await izinleriSunucundanYukle();
+                    } else {
+                        alert('İzinler temizlenirken hata oluştu!');
+                    }
+                } catch (error) {
+                    console.error('İzin temizleme hatası:', error);
+                    alert('İzinler temizlenirken hata oluştu!');
+                }
+            }
+        }
+        
+        function parseLocalDate(dateStr) {
+            const [year, month, day] = String(dateStr).split('-').map(Number);
+            return new Date(year, month - 1, day);
+        }
+
+        function dateToLocalIso(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatDateStr(tarihStr) {
+            const tarih = parseLocalDate(tarihStr);
+            const gun = String(tarih.getDate()).padStart(2, '0');
+            const ay = String(tarih.getMonth() + 1).padStart(2, '0');
+            const yil = tarih.getFullYear();
+            return `${gun}.${ay}.${yil}`;
+        }
+        
+        function izinliMi(personel, tarih) {
+            const tarihStr = dateToLocalIso(tarih);
+            
+            return izinler.some(izin => {
+                if (izin.personel !== personel) return false;
+                return tarihStr >= izin.baslangic && tarihStr <= izin.bitis;
+            });
+        }
+        
+        function populateMonthYear() {
+            const monthSelect = document.getElementById('monthSelect');
+            const yearSelect = document.getElementById('yearSelect');
+            
+            // Ayları doldur
+            months.forEach((month, index) => {
+                const option = document.createElement('option');
+                option.value = index + 1;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            });
+            
+            // Yılları doldur (mevcut yıl ve sonraki 2 yıl)
+            const currentYear = new Date().getFullYear();
+            for (let year = currentYear; year <= currentYear + 2; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+            
+            // Varsayılan olarak mevcut ay ve yılı seç
+            const currentDate = new Date();
+            monthSelect.value = currentDate.getMonth() + 1;
+            yearSelect.value = currentDate.getFullYear();
+        }
+        
+        function generateSchedule() {
+            const monthSelect = document.getElementById('monthSelect');
+            const yearSelect = document.getElementById('yearSelect');
+            
+            if (!monthSelect.value || !yearSelect.value) {
+                alert('Lütfen ay ve yıl seçiniz!');
+                return;
+            }
+            
+            const month = parseInt(monthSelect.value);
+            const year = parseInt(yearSelect.value);
+            
+            // Ayın başlangıç ve bitiş tarihlerini hesapla
+            const startDate = new Date(year, month - 1, 15);
+            const nextMonth = month === 12 ? 1 : month + 1;
+            const nextYear = month === 12 ? year + 1 : year;
+            const endDate = new Date(nextYear, nextMonth - 1, 14);
+            
+            // Vardiya deseni oluştur
+            const schedule = createSchedulePattern(startDate, endDate);
+            
+            // HTML tablosunu oluştur
+            const scheduleHTML = createScheduleTable(schedule, startDate, endDate);
+            
+            // Sonucu göster
+            document.getElementById('scheduleOutput').innerHTML = scheduleHTML;
+            document.getElementById('dateRange').style.display = 'block';
+            document.getElementById('notesSection').style.display = 'block';
+            document.getElementById('actionButtons').style.display = 'block';
+            
+            // Tarih aralığını göster
+            const startStr = formatDate(startDate);
+            const endStr = formatDate(endDate);
+            document.getElementById('dateRangeText').textContent = `${startStr} - ${endStr} Tarihli Vardiya Çizelgesi`;
+        }
+        
+        function createSchedulePattern(startDate, endDate) {
+            const schedule = [];
+            
+            // Şubat 15 başlangıçlı döngü için referans noktası
+            const feb15Start = new Date(startDate.getFullYear(), 1, 15); // Şubat 15
+            
+            // Şubat 15 - Mart 14 arası mı kontrol et
+            const isFebMarPeriod = (startDate.getMonth() === 1 && startDate.getDate() === 15) || 
+                                (startDate.getMonth() === 2 && startDate.getDate() <= 14);
+            
+            if (isFebMarPeriod) {
+                // Şubat 15 - Mart 14: 28 günlük döngü (resimdeki gibi)
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    const currentDayFromFeb15 = Math.floor((d - feb15Start) / (1000 * 60 * 60 * 24));
+                    const cyclePosition = currentDayFromFeb15 % 28; // 28 günlük döngü
+                    const isFirstBlock = cyclePosition < 14;
+                    
+                    let dayShift, nightShift, onLeave;
+                    
+                    if (isFirstBlock) {
+                        // İlk 14 günlük blok (15 Şubat - 28 Şubat)
+                        if (cyclePosition % 2 === 0) {
+                            // Çift günler (15, 17, 19...)
+                            dayShift = 'OSMAN UYGURALP';
+                            nightShift = 'MUSTAFA ÖZBİLEK';
+                            onLeave = 'SİNAN ACAR';
+                        } else {
+                            // Tek günler (16, 18, 20...)
+                            dayShift = 'SİNAN ACAR';
+                            nightShift = 'SELİM KUZU';
+                            onLeave = 'OSMAN UYGURALP';
+                        }
+                    } else {
+                        // İkinci 14 günlük blok (1 Mart - 14 Mart)
+                        if (cyclePosition % 2 === 0) {
+                            // Çift günler (1, 3, 5...)
+                            dayShift = 'MUSTAFA ÖZBİLEK';
+                            nightShift = 'OSMAN UYGURALP';
+                            onLeave = 'SELİM KUZU';
+                        } else {
+                            // Tek günler (2, 4, 6...)
+                            dayShift = 'SELİM KUZU';
+                            nightShift = 'SİNAN ACAR';
+                            onLeave = 'MUSTAFA ÖZBİLEK';
+                        }
+                    }
+                    
+                    // İzin kontrolü ve düzenleme
+                    const gunlukPlan = izinlereGoreDuzenle(dayShift, nightShift, onLeave, new Date(d));
+                    
+                    schedule.push({
+                        date: new Date(d),
+                        dayShift: gunlukPlan.dayShift,
+                        nightShift: gunlukPlan.nightShift,
+                        onLeave: gunlukPlan.onLeave
+                    });
+                }
+            } else {
+                // Diğer aylar: 30 günlük döngü (Şubat'tan devam eden)
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    const currentDayFromFeb15 = Math.floor((d - feb15Start) / (1000 * 60 * 60 * 24));
+                    const cyclePosition = currentDayFromFeb15 % 30; // 30 günlük döngü
+                    const isFirstBlock = cyclePosition < 15; // İlk 15 gün
+                    
+                    let dayShift, nightShift, onLeave;
+                    
+                    if (isFirstBlock) {
+                        // İlk 15 günlük blok
+                        if (cyclePosition % 2 === 0) {
+                            dayShift = 'OSMAN UYGURALP';
+                            nightShift = 'MUSTAFA ÖZBİLEK';
+                            onLeave = 'SİNAN ACAR';
+                        } else {
+                            dayShift = 'SİNAN ACAR';
+                            nightShift = 'SELİM KUZU';
+                            onLeave = 'OSMAN UYGURALP';
+                        }
+                    } else {
+                        // İkinci 15 günlük blok
+                        if (cyclePosition % 2 === 0) {
+                            dayShift = 'MUSTAFA ÖZBİLEK';
+                            nightShift = 'OSMAN UYGURALP';
+                            onLeave = 'SELİM KUZU';
+                        } else {
+                            dayShift = 'SELİM KUZU';
+                            nightShift = 'SİNAN ACAR';
+                            onLeave = 'MUSTAFA ÖZBİLEK';
+                        }
+                    }
+                    
+                    // İzin kontrolü ve düzenleme
+                    const gunlukPlan = izinlereGoreDuzenle(dayShift, nightShift, onLeave, new Date(d));
+                    
+                    schedule.push({
+                        date: new Date(d),
+                        dayShift: gunlukPlan.dayShift,
+                        nightShift: gunlukPlan.nightShift,
+                        onLeave: gunlukPlan.onLeave
+                    });
+                }
+            }
+            
+            return schedule;
+        }
+        
+        function izinlereGoreDuzenle(dayShift, nightShift, onLeave, tarih) {
+            let yeniDayShift = dayShift;
+            let yeniNightShift = nightShift;
+            let yeniOnLeave = onLeave;
+            
+            // Eğer gündüz personeli izinliyse
+            if (izinliMi(dayShift, tarih)) {
+                yeniDayShift = ''; // Boş string
+            }
+            
+            // Eğer gece personeli izinliyse
+            if (izinliMi(nightShift, tarih)) {
+                yeniNightShift = ''; // Boş string
+            }
+            
+            // Eğer izinli olan personel aslında izinli değilse (başka biri izinliyse)
+            if (!izinliMi(onLeave, tarih)) {
+                // İzinli olmayan personeli boşta olan personel ile değiştir
+                const bosPersoneller = [];
+                if (yeniDayShift === '' && !izinliMi(onLeave, tarih)) {
+                    bosPersoneller.push(onLeave);
+                }
+                if (yeniNightShift === '' && !izinliMi(onLeave, tarih)) {
+                    bosPersoneller.push(onLeave);
+                }
+                
+                if (bosPersoneller.length > 0) {
+                    yeniOnLeave = bosPersoneller[0];
+                }
+            }
+            
+            return {
+                dayShift: yeniDayShift,
+                nightShift: yeniNightShift,
+                onLeave: yeniOnLeave
+            };
+        }
+        
+        function createScheduleTable(schedule, startDate, endDate) {
+            const startStr = formatDate(startDate);
+            const endStr = formatDate(endDate);
+            let html = `
+                <div class="print-header">
+                    <div class="title">BURDUR GENÇLİK VE SPOR İL MÜDÜRLÜĞÜ</div>
+                    <div class="subtitle">SALDA KAYAK MERKEZİ GÜVENLİK VARDİYASI</div>
+                    <div class="date-range-print">${startStr} - ${endStr}</div>
+                </div>
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">TARİH</th>
+                            <th style="width: 80px;">GÜNLER</th>
+                            <th style="width: 120px;">08:00 - 20:00</th>
+                            <th style="width: 120px;">20:00 - 08:00</th>
+                            <th style="width: 120px;">İZİNLİ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            schedule.forEach(day => {
+                const dayOfWeek = days[day.date.getDay()];
+                const isHoliday = resmiTatilMi(day.date);
+                
+                const cellClass = isHoliday ? 'official-holiday' : '';
+                
+                html += `
+                    <tr>
+                        <td class="date-cell ${cellClass}">${formatDate(day.date)}</td>
+                        <td class="day-cell ${cellClass}">${dayOfWeek}</td>
+                        <td class="${cellClass}">${day.dayShift}</td>
+                        <td class="${cellClass}">${day.nightShift}</td>
+                        <td class="${cellClass}">${day.onLeave}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            return html;
+        }
+        
+        function formatDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+        
+        function generateExcel() {
+            try {
+                const monthValue = document.getElementById('monthSelect').value;
+                const yearValue = document.getElementById('yearSelect').value;
+                const monthName = monthValue ? months[parseInt(monthValue, 10) - 1] : '';
+                const scheduleTitle = monthValue && yearValue
+                    ? `${monthName} ${yearValue} Vardiya Çizelgesi`
+                    : 'Vardiya Çizelgesi';
+
+                // Excel verisi oluştur
+                const ws_data = [];
+                
+                // Başlık ekle
+                ws_data.push(['BURDUR GENÇLİK VE SPOR İL MÜDÜRLÜĞÜ']);
+                ws_data.push(['SALDA KAYAK MERKEZİ GÜVENLİK VARDİYASI']);
+                ws_data.push([scheduleTitle]);
+                ws_data.push([]);
+                
+                // Tarih aralığı ekle
+                const dateRangeText = document.getElementById('dateRangeText').textContent;
+                ws_data.push([dateRangeText]);
+                ws_data.push([]);
+                
+                // Tablo başlıkları ekle
+                ws_data.push(['TARİH', 'GÜNLER', '08:00 - 20:00', '20:00 - 08:00', 'İZİNLİ']);
+                
+                // Tablo verilerini ekle
+                const rows = document.querySelectorAll('.schedule-table tbody tr');
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    const rowData = [];
+                    cells.forEach(cell => {
+                        rowData.push(cell.textContent.trim());
+                    });
+                    ws_data.push(rowData);
+                });
+                
+                // Notlar ekle
+                ws_data.push([]);
+                ws_data.push(['NOTLAR']);
+                ws_data.push(['1. Görevi ile ilgili emir ve talimatları eksiksiz yerine getirecektir.']);
+                ws_data.push(['2. Çalışma yerinde verilen 1 saatlik yemek ve dinlenme süresi çalışma süresine dahil edilmiştir.']);
+                ws_data.push(['3. Nöbet vardiya sistemi 12 (on iki) saatlik nöbet sistemine göre yazılmıştır.']);
+                
+                // Worksheet oluştur
+                const ws = XLSX.utils.aoa_to_sheet(ws_data);
+                
+                // Sütun genişliklerini ayarla
+                const colWidths = [
+                    { wch: 15 }, // TARİH
+                    { wch: 15 }, // GÜNLER
+                    { wch: 25 }, // 08:00 - 20:00
+                    { wch: 25 }, // 20:00 - 08:00
+                    { wch: 25 }  // İZİNLİ
+                ];
+                ws['!cols'] = colWidths;
+                
+                // Basit merge hücreleri (biçimlendirme olmadan)
+                const merges = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }, // İlk başlık satırı
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } }, // İkinci başlık satırı
+                    { s: { r: 3, c: 0 }, e: { r: 3, c: 4 } }, // Tarih aralığı
+                    { s: { r: ws_data.length - 4, c: 0 }, e: { r: ws_data.length - 4, c: 4 } } // NOTLAR başlığı
+                ];
+                ws['!merges'] = merges;
+                
+                // Workbook oluştur
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Vardiya Çizelgesi");
+                
+                // Excel dosyası olarak indir
+                const fileName = monthValue && yearValue
+                    ? `vardiya_${monthName.replace(/\s+/g, '_')}_${yearValue}.xlsx`
+                    : `vardiya_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+            } catch (error) {
+                console.error('Excel oluşturma hatası:', error);
+                alert('Excel dosyası oluşturulurken bir hata oluştu: ' + error.message);
+            }
+        }
+        
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4'); // Dikey A4
+            
+            // Font - Times New Roman (sadece bu)
+            doc.setFont('times');
+            
+            // Sayfa boyutlari
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            
+            let yPosition = 30;
+            
+            // BAÞLIK - Tam ortalama
+            doc.setFont('times', 'bold');
+            doc.setFontSize(18);
+            doc.text('BURDUR GENÇLÝK VE SPOR ÝL MÜDÜRLÜGÜ', pageWidth / 2, yPosition, { align: 'center' });
+            yPosition += 8;
+            doc.text('SALDA KAYAK MERKEZÝ GÜVENLÝK VARDÝYASI', pageWidth / 2, yPosition, { align: 'center' });
+            
+            // Tarih aralýðý - kontrol ile
+            const dateRangeText = document.getElementById('dateRangeText').textContent;
+            if (!dateRangeText) {
+                alert('Önce vardiya oluşturmanız gerekiyor!');
+                return;
+            }
+            
+            yPosition += 15;
+            doc.setFont('times', 'normal');
+            doc.setFontSize(11);
+            doc.text(dateRangeText, pageWidth / 2, yPosition, { align: 'center' });
+            
+            // TABLO - Tam ortalama
+            yPosition += 20;
+            const headers = ['TARÝH', 'GÜN', '08:00 - 20:00', '20:00 - 08:00', 'ÝZÝNLÝ'];
+            const columnWidths = [35, 35, 40, 40, 40];
+            const tableStartX = 20;
+            const tableWidth = 190;
+            
+            // Tablo üst çizgisi
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.3);
+            doc.line(tableStartX, yPosition, tableStartX + tableWidth, yPosition);
+            
+            // Baþlýk satýrý
+            yPosition += 8;
+            doc.setFont('times', 'bold');
+            doc.setFontSize(11);
+            let xPos = tableStartX;
+            
+            headers.forEach((header, index) => {
+                doc.text(header, xPos + columnWidths[index] / 2, yPosition, { align: 'center' });
+                xPos += columnWidths[index];
+            });
+            
+            // Baþlýk alt çizgisi
+            yPosition += 6;
+            doc.line(tableStartX, yPosition, tableStartX + tableWidth, yPosition);
+            
+            // Dikey çizgiler - baþlýk
+            xPos = tableStartX;
+            for (let i = 0; i <= headers.length; i++) {
+                doc.line(xPos, yPosition - 14, xPos, yPosition);
+                if (i < headers.length) xPos += columnWidths[i];
+            }
+            
+            // TABLO VERÝLERÝ - Tam ortalama
+            doc.setFont('times', 'normal');
+            doc.setFontSize(11);
+            
+            const rows = document.querySelectorAll('.schedule-table tbody tr');
+            
+            if (rows.length === 0) {
+                alert('Vardiya oluşturmanız gerekiyor!');
+                return;
+            }
+            
+            rows.forEach((row, index) => {
+                if (yPosition > pageHeight - 70) return; // Sayfa sonu
+                
+                xPos = tableStartX;
+                const cells = row.querySelectorAll('td');
+                
+                cells.forEach((cell, cellIndex) => {
+                    let text = cell.textContent.trim();
+                    // Tarih formatý düzeltme
+                    if (cellIndex === 0) {
+                        const dateText = text;
+                        if (dateText.includes('.')) {
+                            const parts = dateText.split('.');
+                            if (parts.length === 3) {
+                                text = `${parts[0].padStart(2, '0')}.${parts[1].padStart(2, '0')}.${parts[2]}`;
+                            }
+                        }
+                    }
+                    doc.text(text, xPos + columnWidths[cellIndex] / 2, yPosition, { align: 'center' });
+                    xPos += columnWidths[cellIndex];
+                });
+                
+                // Satýr alt çizgisi
+                yPosition += 8;
+                doc.line(tableStartX, yPosition, tableStartX + tableWidth, yPosition);
+                
+                // Dikey çizgiler - veri satýrlarý
+                xPos = tableStartX;
+                for (let i = 0; i <= headers.length; i++) {
+                    doc.line(xPos, yPosition - 8, xPos, yPosition);
+                    if (i < headers.length) xPos += columnWidths[i];
+                }
+            });
+            
+            // ALT BÝLGÝ KALDIRILDI - Doðrudan kurallara geç
+            
+            // MADDELER - Tam ortalama
+            yPosition += 25;
+            doc.setFont('times', 'normal');
+            doc.setFontSize(11);
+            
+            const rules = [
+                '1. Görevi ile ilgili emir ve talimatlarý eksiksiz yerine getirecektir.',
+                '2. Çalýþma yerinde verilen 1 saatlik yemek ve dinlenme süresi çalýþma süresine dahil edilmiþtir.',
+                '3. Nöbet listesi 12 saatlik vardiya sistemine göre yazýlmýþtýr.'
+            ];
+            
+            rules.forEach((rule, index) => {
+                doc.text(rule, pageWidth / 2, yPosition, { align: 'center' });
+                yPosition += 6;
+            });
+            
+            // ÝMZA ALANI - Tam ortalama
+            yPosition = pageHeight - 45;
+            doc.setFont('times', 'normal');
+            doc.setFontSize(11);
+            doc.text('Onaylayan', pageWidth - 40, yPosition, { align: 'center' });
+            yPosition += 5;
+            doc.text('Ramazan KARA', pageWidth - 40, yPosition, { align: 'center' });
+            yPosition += 5;
+            doc.text('Ýlçe Müdürü', pageWidth - 40, yPosition, { align: 'center' });
+            
+            // PDF'i indir
+            const fileName = `vardiya_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+@echo off
+echo Vardiya Otomasyon Sistemi Baslatiliyor...
+echo.
+echo Sunucu baslatiliyor...
+node server.js
+pause
