@@ -34,6 +34,10 @@ if (PUBLIC_URL_PATH) {
 
 const corsOriginSet = new Set([
     'https://mail.sinanacar.com.tr',
+    'http://localhost',
+    'http://127.0.0.1',
+    'http://localhost:80',
+    'http://127.0.0.1:80',
     'http://localhost:5000',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
@@ -68,30 +72,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/vardiya')
         console.log('MongoDB bağlantısı başarılı');
     })
     .catch((err) => {
-    console.log('MongoDB bağlantısı başarısız, dosya modunda çalışıyor:', err.message);
-    console.log('Dosya modu aktif - izinler.json kullanılıyor');
+    console.log('MongoDB bağlantısı başarısız:', err.message);
 });
-
-const IZIN_DOSYASI = path.join(__dirname, 'izinler.json');
-
-async function izinleriOku() {
-    try {
-        const data = await fs.readFile(IZIN_DOSYASI, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-}
-
-async function izinleriKaydet(izinler) {
-    try {
-        await fs.writeFile(IZIN_DOSYASI, JSON.stringify(izinler, null, 2));
-        return true;
-    } catch (error) {
-        console.error('İzinler kaydedilemedi:', error);
-        return false;
-    }
-}
 
 const PersonelSchema = new mongoose.Schema({
     ad: { type: String, required: true },
@@ -110,16 +92,8 @@ const VardiyaSchema = new mongoose.Schema({
     yil: { type: Number, required: true }
 });
 
-const IzinSchema = new mongoose.Schema({
-    personel: { type: String, required: true },
-    baslangic: { type: Date, required: true },
-    bitis: { type: Date, required: true },
-    createdAt: { type: Date, default: Date.now }
-});
-
 const Personel = mongoose.model('Personel', PersonelSchema);
 const Vardiya = mongoose.model('Vardiya', VardiyaSchema);
-const Izin = mongoose.model('Izin', IzinSchema);
 
 const varsayilanPersonel = [
     'OSMAN UYGURALP',
@@ -132,31 +106,42 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+function personelAdAnahtar(ad) {
+    return String(ad || '')
+        .trim()
+        .replace(/\s+/g, ' ')
+        .toLocaleUpperCase('tr-TR');
+}
+
 app.get('/api/personel', async (req, res) => {
+    const adHaritasi = new Map();
+    varsayilanPersonel.forEach((ad) => {
+        adHaritasi.set(personelAdAnahtar(ad), ad);
+    });
     try {
-        const personel = await Personel.find({ aktif: true }).sort({ tamAd: 1 });
-        if (personel.length === 0) {
-            const varsayilan = varsayilanPersonel.map((ad, index) => ({
-                _id: index + 1,
-                tamAd: ad,
-                ad: ad.split(' ')[0],
-                soyad: ad.split(' ')[1] || '',
-                aktif: true
-            }));
-            res.json(varsayilan);
-        } else {
-            res.json(personel);
-        }
+        const kayitlar = await Personel.find({ aktif: true }).sort({ tamAd: 1 });
+        kayitlar.forEach((p) => {
+            const tam = (p.tamAd || '').trim();
+            if (!tam) return;
+            const k = personelAdAnahtar(tam);
+            if (!adHaritasi.has(k)) {
+                adHaritasi.set(k, tam);
+            }
+        });
     } catch (error) {
-        const varsayilan = varsayilanPersonel.map((ad, index) => ({
-            _id: index + 1,
-            tamAd: ad,
-            ad: ad.split(' ')[0],
-            soyad: ad.split(' ')[1] || '',
-            aktif: true
-        }));
-        res.json(varsayilan);
+        console.log('Personel DB okunamadı, yalnızca varsayılan isimler kullanılıyor');
     }
+    const tamAdlar = Array.from(adHaritasi.values()).sort((a, b) =>
+        a.localeCompare(b, 'tr')
+    );
+    const cevap = tamAdlar.map((tamAd, index) => ({
+        _id: index + 1,
+        tamAd,
+        ad: tamAd.split(' ')[0],
+        soyad: tamAd.split(' ').slice(1).join(' ') || '',
+        aktif: true
+    }));
+    res.json(cevap);
 });
 
 app.post('/api/vardiya/olustur', async (req, res) => {
@@ -244,6 +229,44 @@ app.get('/api/vardiya/:ay/:yil', async (req, res) => {
     }
 });
 
+const IZIN_DOSYASI = path.join(__dirname, 'izinler.json');
+
+async function izinleriOku() {
+    try {
+        const data = await fs.readFile(IZIN_DOSYASI, 'utf8');
+        const parsed = JSON.parse(data);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+async function izinleriKaydet(izinler) {
+    try {
+        if (!Array.isArray(izinler)) {
+            return { ok: false, error: 'İç veri dizisi değil' };
+        }
+        await fs.writeFile(IZIN_DOSYASI, JSON.stringify(izinler, null, 2), 'utf8');
+        return { ok: true };
+    } catch (error) {
+        console.error('İzinler kaydedilemedi:', error);
+        return { ok: false, error: error.message || String(error) };
+    }
+}
+
+function tarihGunMetni(deg) {
+    if (deg == null || deg === '') return '';
+    const s = String(deg).trim();
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) return '';
+    const y = d.getFullYear();
+    const mo = String(d.getMonth() + 1).padStart(2, '0');
+    const da = String(d.getDate()).padStart(2, '0');
+    return `${y}-${mo}-${da}`;
+}
+
 app.get('/api/izinler', async (req, res) => {
     try {
         const izinler = await izinleriOku();
@@ -256,28 +279,40 @@ app.get('/api/izinler', async (req, res) => {
 app.post('/api/izinler', async (req, res) => {
     try {
         const { personel, baslangic, bitis } = req.body;
-        
+
         if (!personel || !baslangic || !bitis) {
             return res.status(400).json({ message: 'Eksik veri gönderildi' });
         }
 
+        const basStr = tarihGunMetni(baslangic);
+        const bitStr = tarihGunMetni(bitis);
+        if (!basStr || !bitStr) {
+            return res.status(400).json({ message: 'Geçersiz tarih formatı' });
+        }
+        if (basStr > bitStr) {
+            return res.status(400).json({ message: 'Başlangıç tarihi bitişten sonra olamaz' });
+        }
+
         const izinler = await izinleriOku();
-        
+
         const yeniIzin = {
             _id: Date.now().toString(),
-            personel,
-            baslangic,
-            bitis,
+            personel: String(personel).trim(),
+            baslangic: basStr,
+            bitis: bitStr,
             createdAt: new Date().toISOString()
         };
 
         izinler.push(yeniIzin);
-        const kaydedildi = await izinleriKaydet(izinler);
+        const sonuc = await izinleriKaydet(izinler);
 
-        if (kaydedildi) {
+        if (sonuc.ok) {
             res.status(201).json(yeniIzin);
         } else {
-            res.status(500).json({ message: 'Izin kaydedilemedi' });
+            res.status(500).json({
+                message: 'İzin dosyasına yazılamadı',
+                detail: sonuc.error
+            });
         }
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -289,12 +324,12 @@ app.delete('/api/izinler/:id', async (req, res) => {
         const izinler = await izinleriOku();
         const filtrelenmisIzinler = izinler.filter(izin => izin._id !== req.params.id);
 
-        const kaydedildi = await izinleriKaydet(filtrelenmisIzinler);
+        const sonuc = await izinleriKaydet(filtrelenmisIzinler);
 
-        if (kaydedildi) {
-            res.json({ message: 'Izin başarıyla silindi' });
+        if (sonuc.ok) {
+            res.json({ message: 'İzin silindi' });
         } else {
-            res.status(500).json({ message: 'Izin silinemedi' });
+            res.status(500).json({ message: 'İzin silinemedi', detail: sonuc.error });
         }
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -303,12 +338,12 @@ app.delete('/api/izinler/:id', async (req, res) => {
 
 app.delete('/api/izinler', async (req, res) => {
     try {
-        const kaydedildi = await izinleriKaydet([]);
+        const sonuc = await izinleriKaydet([]);
 
-        if (kaydedildi) {
+        if (sonuc.ok) {
             res.json({ message: 'Tüm izinler temizlendi' });
         } else {
-            res.status(500).json({ message: 'Izinler temizlenemedi' });
+            res.status(500).json({ message: 'İzinler temizlenemedi', detail: sonuc.error });
         }
     } catch (error) {
         res.status(500).json({ message: error.message });

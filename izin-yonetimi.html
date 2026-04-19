@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- API kök URL: boş bırakın = otomatik. XAMPP (Apache) ile sayfa açılıyorsa localhost/127.0.0.1 için API http://host:5000 kullanılır (Node ayrı çalışmalı). Reverse proxy ile /api aynı hostta ise boş kalsın. Özel adres için örnek: content="https://alanadiniz.com/vardiya" -->
+    <meta name="vardiya-api-base" content="">
+    <title>Personel İzin Yönetimi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(160deg, #e8eef3 0%, #f5f7fa 50%);
+            min-height: 100vh;
+            padding: 24px 16px 48px;
+        }
+        .page-shell {
+            max-width: 920px;
+            margin: 0 auto;
+        }
+        .top-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .top-bar a.back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #2c3e50;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 14px;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #d0dae4;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06);
+        }
+        .top-bar a.back-link:hover {
+            background: #f8f9fa;
+        }
+        .page-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #2c3e50;
+            margin: 0;
+        }
+        .card-izin {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
+            overflow: hidden;
+        }
+        .card-izin .card-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #fff;
+            padding: 16px 20px;
+            font-weight: 700;
+            border: none;
+        }
+        .form-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+        .btn-izin-ekle {
+            background: linear-gradient(180deg, #f0ad4e 0%, #ec971f 100%);
+            border: 1px solid #d58512;
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+        .btn-izin-ekle:disabled {
+            opacity: 0.65;
+        }
+        .izin-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: #fafbfc;
+        }
+        .izin-row:last-child {
+            margin-bottom: 0;
+        }
+        .izin-meta {
+            font-size: 0.88rem;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+        .empty-hint {
+            text-align: center;
+            padding: 28px;
+            color: #6c757d;
+            border: 2px dashed #ced4da;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        .personel-rozet {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 20px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <div class="top-bar">
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Vardiya çizelgesine dön
+            </a>
+            <h1 class="page-title"><i class="fas fa-calendar-times me-2 text-secondary"></i>Personel İzin Yönetimi</h1>
+        </div>
+
+        <div class="card card-izin mb-4">
+            <div class="card-header">
+                <i class="fas fa-plus-circle me-2"></i>Yeni izin kaydı
+            </div>
+            <div class="card-body p-4">
+                <div id="izinMesaj" class="alert d-none mb-3" role="alert"></div>
+                <p class="small text-muted mb-2 fw-semibold">Vardiya personeli</p>
+                <div id="vardiyaPersonelBadges" class="d-flex flex-wrap gap-2 mb-4" aria-label="Personel listesi"></div>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label" for="personelSelect">İzin verilecek personel</label>
+                        <select id="personelSelect" class="form-select">
+                            <option value="">Personel seçin…</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="izinBaslangic">Başlangıç</label>
+                        <input type="date" id="izinBaslangic" class="form-control" autocomplete="off">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="izinBitis">Bitiş</label>
+                        <input type="date" id="izinBitis" class="form-control" autocomplete="off">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-izin-ekle w-100" id="btnIzinEkle">
+                            <i class="fas fa-plus"></i> Ekle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-izin">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span><i class="fas fa-list me-2"></i>Kayıtlı izinler</span>
+                <button type="button" class="btn btn-sm btn-outline-light" id="btnTumunuTemizle">
+                    <i class="fas fa-trash-alt"></i> Tümünü sil
+                </button>
+            </div>
+            <div class="card-body p-4">
+                <div id="izinListesi"><div class="empty-hint">Yükleniyor…</div></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let personnel = [];
+
+        let izinler = [];
+        let personelHavuzu = [];
+
+        function apiUrl(endpoint) {
+            const ep = String(endpoint).replace(/^\/+/, '');
+            const metaEl = document.querySelector('meta[name="vardiya-api-base"]');
+            let base = metaEl ? metaEl.getAttribute('content') : '';
+            if (base) base = String(base).trim();
+            if (base) {
+                return base.replace(/\/$/, '') + '/api/' + ep;
+            }
+            const h = window.location.hostname;
+            if (h === 'localhost' || h === '127.0.0.1') {
+                return window.location.protocol + '//' + h + ':5000/api/' + ep;
+            }
+            const p = window.location.pathname || '/';
+            const baseDir = p.replace(/[^/]*$/, '');
+            return baseDir + 'api/' + ep;
+        }
+
+        async function httpHataOzeti(response) {
+            const raw = await response.text();
+            try {
+                const j = JSON.parse(raw);
+                let s = j.message || '';
+                if (j.detail) s += (s ? ' ' : '') + String(j.detail);
+                return s || raw.slice(0, 400) || ('HTTP ' + response.status);
+            } catch (e) {
+                return raw.slice(0, 400) || ('HTTP ' + response.status);
+            }
+        }
+
+        function normalizeIzinTarih(deger) {
+            if (deger == null) return '';
+            const s = String(deger).trim();
+            const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+            return m ? m[1] : '';
+        }
+
+        function normalizePersonelAd(s) {
+            return String(s || '').trim().replace(/\s+/g, ' ').toLocaleUpperCase('tr-TR');
+        }
+
+        function setMesaj(metin, tur) {
+            const el = document.getElementById('izinMesaj');
+            if (!metin) {
+                el.className = 'alert d-none mb-3';
+                el.textContent = '';
+                return;
+            }
+            const cls = tur === 'danger' ? 'alert-danger' : tur === 'success' ? 'alert-success' : 'alert-info';
+            el.className = 'alert ' + cls + ' mb-3';
+            el.textContent = metin;
+        }
+
+        function escapeHtml(s) {
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+
+        function formatDateStr(tarihStr) {
+            if (!tarihStr) return '—';
+            const [y, m, d] = String(tarihStr).split('-').map(Number);
+            const tarih = new Date(y, m - 1, d);
+            if (Number.isNaN(tarih.getTime())) return tarihStr;
+            return String(tarih.getDate()).padStart(2, '0') + '.' +
+                String(tarih.getMonth() + 1).padStart(2, '0') + '.' + tarih.getFullYear();
+        }
+
+        function personelRozetleriniCiz() {
+            const box = document.getElementById('vardiyaPersonelBadges');
+            if (!box) return;
+            box.innerHTML = personnel.map(ad =>
+                '<span class="personel-rozet">' + escapeHtml(ad) + '</span>'
+            ).join('');
+        }
+
+        async function yuklePersonelHavuzu() {
+            let liste = [];
+            try {
+                const r = await fetch(apiUrl('personel'));
+                if (r.ok) {
+                    const data = await r.json();
+                    if (Array.isArray(data) && data.length) {
+                        liste = data.map(p => (p.tamAd || [p.ad, p.soyad].filter(Boolean).join(' ')).trim()).filter(Boolean);
+                    }
+                }
+            } catch (e) {
+                console.warn('Personel API yüklenemedi:', e);
+                setMesaj('Personel listesi yüklenemedi. Sunucu bağlantısını kontrol edin.', 'danger');
+            }
+            
+            // Varsayılan personel listesi sadece yedek olarak
+            const varsayilanPersonel = ['OSMAN UYGURALP', 'SİNAN ACAR', 'MUSTAFA ÖZBİLEK', 'SELİM KUZU'];
+            
+            try {
+                const birlesik = new Map();
+                // Önce API'den gelenleri ekle
+                liste.forEach(ad => {
+                    const k = normalizePersonelAd(ad);
+                    if (k && !birlesik.has(k)) birlesik.set(k, ad.trim());
+                });
+                // Sonra varsayılanları ekle (eğer yoksa)
+                varsayilanPersonel.forEach(ad => {
+                    const k = normalizePersonelAd(ad);
+                    if (k && !birlesik.has(k)) birlesik.set(k, ad);
+                });
+                personelHavuzu = Array.from(birlesik.values()).sort((a, b) => a.localeCompare(b, 'tr'));
+                personnel = personelHavuzu.slice(); // Güncelleme için personnel listesini de güncelle
+            } catch (e) {
+                console.error('Personel birleştirme hatası:', e);
+                personelHavuzu = varsayilanPersonel.slice();
+                personnel = varsayilanPersonel.slice();
+            }
+            if (!personelHavuzu.length) {
+                personelHavuzu = varsayilanPersonel.slice();
+                personnel = varsayilanPersonel.slice();
+            }
+            personelSeciminiYenile();
+            personelRozetleriniCiz(); // Rozetleri güncelle
+        }
+
+        function personelSeciminiYenile() {
+            const sel = document.getElementById('personelSelect');
+            if (!sel) return;
+            const onceki = sel.value;
+
+            sel.innerHTML = '';
+            const ph = document.createElement('option');
+            ph.value = '';
+            ph.textContent = 'Personel seçin…';
+            sel.appendChild(ph);
+
+            personelHavuzu.forEach(ad => {
+                const o = document.createElement('option');
+                o.value = ad;
+                o.textContent = ad;
+                sel.appendChild(o);
+            });
+            if (onceki && [...sel.options].some(x => x.value === onceki)) sel.value = onceki;
+        }
+
+        async function izinleriSunucudanYukle() {
+            const listBox = document.getElementById('izinListesi');
+            if (listBox) {
+                listBox.innerHTML = '<div class="empty-hint"><i class="fas fa-spinner fa-spin me-2"></i>Yükleniyor…</div>';
+            }
+            
+            try {
+                const r = await fetch(apiUrl('izinler'));
+                if (!r.ok) {
+                    throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+                }
+                const data = await r.json();
+                if (!Array.isArray(data)) throw new Error('Geçersiz veri formatı');
+                
+                izinler = data.map(iz => ({
+                    id: iz._id,
+                    personel: iz.personel,
+                    baslangic: normalizeIzinTarih(iz.baslangic),
+                    bitis: normalizeIzinTarih(iz.bitis)
+                }));
+                
+                izinleriGoster();
+                personelSeciminiYenile();
+                if (document.getElementById('izinMesaj').classList.contains('alert-danger')) {
+                    setMesaj('');
+                }
+            } catch (e) {
+                console.error('İzinler yüklenemedi:', e);
+                izinler = [];
+                if (listBox) {
+                    listBox.innerHTML = '<div class="empty-hint"><i class="fas fa-exclamation-triangle me-2"></i>İzinler yüklenemedi</div>';
+                }
+                
+                let hataMesaji = 'İzinler yüklenemedi. ';
+                if (e.message.includes('Failed to fetch')) {
+                    hataMesaji += 'Node sunucusu açık mı? (localhost:5000)';
+                } else if (e.message.includes('HTTP 404')) {
+                    hataMesaji += 'API endpoint bulunamadı.';
+                } else if (e.message.includes('HTTP 500')) {
+                    hataMesaji += 'Sunucu iç hatası.';
+                } else {
+                    hataMesaji += e.message;
+                }
+                setMesaj(hataMesaji, 'danger');
+            }
+        }
+
+        function izinleriGoster() {
+            const box = document.getElementById('izinListesi');
+            if (!izinler.length) {
+                box.innerHTML = '<div class="empty-hint">Henüz izin kaydı yok. Yukarıdan ekleyebilirsiniz.</div>';
+                return;
+            }
+            let html = '';
+            izinler.forEach(iz => {
+                const idAttr = String(iz.id).replace(/"/g, '&quot;');
+                html += `<div class="izin-row">
+                    <div>
+                        <strong>${escapeHtml(iz.personel)}</strong>
+                        <div class="izin-meta">${formatDateStr(iz.baslangic)} — ${formatDateStr(iz.bitis)}</div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-danger btn-sil-izin" data-id="${idAttr}" title="Sil"><i class="fas fa-trash"></i></button>
+                </div>`;
+            });
+            box.innerHTML = html;
+            box.querySelectorAll('.btn-sil-izin').forEach(btn => {
+                btn.addEventListener('click', () => izinSil(btn.getAttribute('data-id')));
+            });
+        }
+
+        async function izinSil(id) {
+            if (!confirm('Bu izin kaydını silmek istediğinizden emin misiniz?')) return;
+            
+            const btn = document.querySelector(`[data-id="${id}"]`);
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
+            
+            try {
+                const r = await fetch(apiUrl('izinler/' + encodeURIComponent(id)), { method: 'DELETE' });
+                if (r.ok) {
+                    await izinleriSunucudanYukle();
+                    setMesaj('İzin başarıyla silindi.', 'success');
+                } else {
+                    const detay = await httpHataOzeti(r);
+                    setMesaj('Silme işlemi başarısız: ' + detay, 'danger');
+                }
+            } catch (e) {
+                console.error('İzin silme hatası:', e);
+                setMesaj('Bağlantı hatası. Sunucunun çalıştığından emin olun.', 'danger');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash"></i>';
+                }
+            }
+        }
+
+        function tarihCakismasiVar(personel, baslangic, bitis, cikarilacakId = null) {
+            return izinler.some(iz => {
+                if (iz.id === cikarilacakId) return false; // Düzenleme durumunda kendini kontrol etme
+                if (normalizePersonelAd(iz.personel) !== normalizePersonelAd(personel)) return false;
+                
+                // Tarih aralığı çakışması kontrolü
+                const izinBas = new Date(iz.baslangic);
+                const izinBit = new Date(iz.bitis);
+                const yeniBas = new Date(baslangic);
+                const yeniBit = new Date(bitis);
+                
+                return !(yeniBit < izinBas || yeniBas > izinBit);
+            });
+        }
+
+        async function izinEkle() {
+            const personel = document.getElementById('personelSelect').value;
+            const baslangic = document.getElementById('izinBaslangic').value;
+            const bitis = document.getElementById('izinBitis').value;
+            const btn = document.getElementById('btnIzinEkle');
+            setMesaj('');
+            
+            if (!personel || !baslangic || !bitis) {
+                setMesaj('Personel ve her iki tarihi seçin.', 'danger');
+                return;
+            }
+            if (baslangic > bitis) {
+                setMesaj('Başlangıç, bitişten sonra olamaz.', 'danger');
+                return;
+            }
+            
+            // Tarih çakışması kontrolü
+            if (tarihCakismasiVar(personel, baslangic, bitis)) {
+                setMesaj('Bu personel için seçilen tarih aralığında zaten izin kaydı mevcut.', 'danger');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+            
+            try {
+                const r = await fetch(apiUrl('izinler'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ personel, baslangic, bitis })
+                });
+                if (r.ok) {
+                    document.getElementById('personelSelect').value = '';
+                    document.getElementById('izinBaslangic').value = '';
+                    document.getElementById('izinBitis').value = '';
+                    await izinleriSunucudanYukle();
+                    setMesaj('İzin başarıyla kaydedildi.', 'success');
+                } else {
+                    const detay = await httpHataOzeti(r);
+                    setMesaj('Kayıt başarısız: ' + detay, 'danger');
+                }
+            } catch (e) {
+                console.error('İzin ekleme hatası:', e);
+                setMesaj('Bağlantı hatası. Sunucunun çalıştığından emin olun.', 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-plus"></i> Ekle';
+            }
+        }
+
+        async function tumunuTemizle() {
+            if (!confirm('Tüm izin kayıtları silinsin mi? Bu işlem geri alınamaz.')) return;
+            if (izinler.length === 0) {
+                setMesaj('Silinecek izin kaydı bulunmuyor.', 'info');
+                return;
+            }
+            
+            const btn = document.getElementById('btnTumunuTemizle');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Siliniyor...';
+            setMesaj('');
+            
+            try {
+                const r = await fetch(apiUrl('izinler'), { method: 'DELETE' });
+                if (r.ok) {
+                    await izinleriSunucudanYukle();
+                    setMesaj(`Tüm izinler silindi (${izinler.length} kayıt).`, 'success');
+                } else {
+                    const detay = await httpHataOzeti(r);
+                    setMesaj('Temizleme işlemi başarısız: ' + detay, 'danger');
+                }
+            } catch (e) {
+                console.error('Toplu silme hatası:', e);
+                setMesaj('Bağlantı hatası. Sunucunun çalıştığından emin olun.', 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash-alt"></i> Tümünü sil';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Önce varsayılan personel listesini yükle (fallback için)
+            const varsayilanPersonel = ['OSMAN UYGURALP', 'SİNAN ACAR', 'MUSTAFA ÖZBİLEK', 'SELİM KUZU'];
+            personnel = varsayilanPersonel.slice();
+            personelHavuzu = varsayilanPersonel.slice();
+            personelRozetleriniCiz();
+            personelSeciminiYenile();
+            
+            // Sonra API'den güncel listeyi yükle
+            yuklePersonelHavuzu()
+                .then(() => izinleriSunucudanYukle())
+                .catch(() => {
+                    console.warn('API çalışmıyor, varsayılan listelerle devam ediliyor');
+                    // İzinleri de varsayılan olarak boş bırak
+                    izinler = [];
+                    izinleriGoster();
+                    setMesaj('Sunucu bağlantısı yok. Varsayılan personel listesi kullanılıyor.', 'warning');
+                });
+                
+            document.getElementById('btnIzinEkle').addEventListener('click', izinEkle);
+            document.getElementById('btnTumunuTemizle').addEventListener('click', tumunuTemizle);
+        });
+    </script>
+</body>
+</html>

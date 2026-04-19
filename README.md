@@ -1,149 +1,81 @@
 # Vardiya Otomasyon Sistemi
 
-Profesyonel vardiya çizelgesi ve izin yönetim sistemi.
+Profesyonel vardiya çizelgesi oluşturma aracı.
 
-## 🚀 Özellikler
+## Özellikler
 
-- **Vardiya Çizelgesi Oluşturma**: Otomatik vardiya planlaması
-- **İzin Yönetimi**: Personel izinlerini ekleme/silme
-- **Web Arayüzü**: Modern ve kullanıcı dostu arayüz
-- **Veri Yedekleme**: JSON dosya tabanlı veri saklama
-- **MongoDB Desteği**: İsteğe bağlı veritabanı entegrasyonu
+- **Vardiya çizelgesi**: Otomatik vardiya planlaması
+- **Web arayüzü**: Basit ve kullanıcı dostu arayüz
+- **MongoDB desteği**: İsteğe bağlı veritabanı entegrasyonu
 
-## 📋 Sistem Gereksinimleri
+## Sistem gereksinimleri
 
-- Node.js 16+ 
+- Node.js 16+
 - npm (Node Package Manager)
 - MongoDB (isteğe bağlı)
 
-## ⚡ Kurulum
+## Kurulum
 
-### 1. Projeyi İndirme
+### 1. Bağımlılıklar
 ```bash
-# Proje dosyalarını bilgisayarınıza indirin
-# Vardiya-Otomasyon klasörünü açın
-```
-
-### 2. Sunucu Kurulumu
-```bash
-# Sunucu klasöründe terminal açın
 npm install
 ```
 
-### 3. İstemci Kurulumu (isteğe bağlı)
+### 2. İstemci (isteğe bağlı)
 ```bash
-# İstemci tarafını kullanmak için
 cd client
 npm install
 npm start
 ```
 
-### 4. Çalıştırma
+### 3. Çalıştırma
 ```bash
-# Ana sunucuyu başlatın
 npm start
-
-# veya geliştirme modunda
-npm run dev
 ```
 
-## 🌐 Kullanım
+Geliştirme modu: `npm run dev`
 
-1. Sunucuyu başlattıktan sonra tarayıcıda açın:
-   ```
-   http://localhost:5000
-   ```
+## Kullanım
 
-2. **Vardiya Oluşturma:**
-   - Ay ve yıl seçin
-   - "Vardiya Çizelgesi Oluştur" butonuna tıklayın
+1. Sunucuyu başlattıktan sonra tarayıcıda açın: `http://localhost:5000`
+2. Ay ve yıl seçin, **Vardiya Oluştur** ile çizelgeyi üretin.
 
-3. **İzin Yönetimi:**
-   - Personel seçin
-   - Başlangıç ve bitiş tarihlerini girin
-   - "İzin Ekle" butonuna tıklayın
+## Konfigürasyon
 
-## ⚙️ Konfigürasyon
-
-### Ortam Değişkenleri
 `env.example` dosyasını kopyalayarak `.env` oluşturun:
 
 ```bash
 cp env.example .env
 ```
 
-### Ayarlar
-```env
-NODE_ENV=production
-PORT=5000
+Örnek değişkenler: `NODE_ENV`, `PORT`, `MONGODB_URI`, `TRUST_PROXY`, `PUBLIC_URL_PATH`, `APP_BASE_URL`, `CORS_ORIGINS`.
 
-# MongoDB (isteğe bağlı)
-MONGODB_URI=mongodb://localhost:27017/vardiya
-
-# Proxy ayarları
-TRUST_PROXY=1
-PUBLIC_URL_PATH=/vardiya
-
-# CORS ayarları
-APP_BASE_URL=
-CORS_ORIGINS=https://siteniz.com
-```
-
-## 📁 Dosya Yapısı
+## Dosya yapısı
 
 ```
 vardiya/
-├── server.js          # Ana sunucu dosyası
+├── server.js          # Ana sunucu
 ├── index.html         # Web arayüzü
-├── package.json       # Sunucu bağımlılıkları
-├── izinler.json       # İzin verileri
-├── env.example        # Ortam değişkenleri şablonu
+├── package.json
+├── env.example
 ├── client/            # React istemcisi (isteğe bağlı)
 └── deploy/            # Dağıtım ayarları
 ```
 
-## 🔧 API Endpoints
+## API
 
 ### Personel
-- `GET /api/personel` - Personel listesi
+- `GET /api/personel` — Personel listesi
 
 ### Vardiya
-- `POST /api/vardiya/olustur` - Vardiya çizelgesi oluştur
-- `GET /api/vardiya/:ay/:yil` - Aylık vardiya listesi
+- `POST /api/vardiya/olustur` — Çizelge oluştur
+- `GET /api/vardiya/:ay/:yil` — Aylık kayıtlar
 
-### İzinler
-- `GET /api/izinler` - İzin listesi
-- `POST /api/izinler` - İzin ekle
-- `DELETE /api/izinler/:id` - İzin sil
-- `DELETE /api/izinler` - Tüm izinleri temizle
+## Notlar
 
-## 🛠️ Geliştirme
+- MongoDB yoksa personel ve vardiya için varsayılan / sınırlı mod kullanılır.
+- Tarayıcıda F12 ile konsoldan hata ayıklayabilirsiniz.
 
-### Geliştirme Modu
-```bash
-npm run dev
-```
-
-### İstemci Geliştirme
-```bash
-cd client
-npm start
-```
-
-## 📝 Notlar
-
-- Sistem MongoDB bağlantısı olamazsa otomatik olarak dosya moduna geçer
-- İzin verileri `izinler.json` dosyasında saklanır
-- Vardiya verileri geçici olarak bellekte tutulur
-- Tarayıcıda F12 ile konsolu açarak hata ayıklama yapabilirsiniz
-
-## 🤝 Destek
-
-Sorunlarınız için:
-1. Tarayıcı konsolunu kontrol edin
-2. Sunucu loglarını inceleyin
-3. MongoDB bağlantınızı kontrol edin (kullanıyorsanız)
-
-## 📄 Lisans
+## Lisans
 
 MIT License
